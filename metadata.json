@@ -1,0 +1,5 @@
+{
+  "name": "BhammiesMark Studio",
+  "description": "A high-performance, client-side image watermarking tool that allows you to apply protective repeating text and logos to your images without any data leaving your device.",
+  "requestFramePermissions": []
+}
