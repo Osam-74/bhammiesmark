@@ -4,6 +4,7 @@ import { WatermarkSettings, FONT_FAMILIES, BatchImage } from './types';
 import ControlSection from './components/ControlSection';
 import PreviewCanvas from './components/PreviewCanvas';
 import Header from './components/Header';
+import SecurityGate from './components/SecurityGate';
 import { renderWatermark } from './utils/drawEngine';
 import { Upload, Download, RefreshCcw, Image as ImageIcon, Type, LayoutGrid, ShieldCheck, Layers, X, Plus } from 'lucide-react';
 
@@ -24,6 +25,7 @@ const DEFAULT_SETTINGS: WatermarkSettings = {
 
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [securityPassed, setSecurityPassed] = useState(false);
   const [images, setImages] = useState<BatchImage[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [logoImage, setLogoImage] = useState<HTMLImageElement | null>(null);
@@ -174,6 +176,10 @@ const App: React.FC = () => {
         </div>
       </div>
     );
+  }
+
+  if (!securityPassed) {
+    return <SecurityGate onAccessGranted={() => setSecurityPassed(true)} />;
   }
 
   return (
