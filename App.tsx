@@ -4,7 +4,6 @@ import { WatermarkSettings, FONT_FAMILIES, BatchImage } from './types';
 import ControlSection from './components/ControlSection';
 import PreviewCanvas from './components/PreviewCanvas';
 import Header from './components/Header';
-import SecurityGate from './components/SecurityGate';
 import { renderWatermark } from './utils/drawEngine';
 import { Upload, Download, RefreshCcw, Image as ImageIcon, Type, LayoutGrid, ShieldCheck, Layers, X, Plus } from 'lucide-react';
 
@@ -25,7 +24,6 @@ const DEFAULT_SETTINGS: WatermarkSettings = {
 
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [securityPassed, setSecurityPassed] = useState(false);
   const [images, setImages] = useState<BatchImage[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [logoImage, setLogoImage] = useState<HTMLImageElement | null>(null);
@@ -178,63 +176,9 @@ const App: React.FC = () => {
     );
   }
 
-  if (!securityPassed) {
-    return <SecurityGate onAccessGranted={() => setSecurityPassed(true)} />;
-  }
-
   return (
-    <div className="min-h-screen flex flex-col bg-[#fdfdfd] animate-in fade-in duration-700">
+    <div className="min-h-screen flex flex-col bg-[#fdfdfd] animate-in fade-in duration-700 pb-24 md:pb-0">
       <Header />
-      
-      {images.length > 0 && (
-        <nav className="bg-white border-b border-slate-100 sticky top-[73px] z-40 shadow-sm px-4">
-          <div className="container mx-auto flex items-center justify-center gap-2 md:gap-8 py-2 relative" ref={menuRef}>
-            <button 
-              onClick={() => toggleMenu('text')}
-              className={`flex flex-col items-center gap-1 px-6 py-2 rounded-xl transition-all ${activeMenu === 'text' ? 'bg-blue-50 text-blue-600' : 'text-slate-500 hover:bg-slate-50'}`}
-            >
-              <Type size={20} />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Text</span>
-            </button>
-            <button 
-              onClick={() => toggleMenu('logo')}
-              className={`flex flex-col items-center gap-1 px-6 py-2 rounded-xl transition-all ${activeMenu === 'logo' ? 'bg-purple-50 text-purple-600' : 'text-slate-500 hover:bg-slate-50'}`}
-            >
-              <ImageIcon size={20} />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Logo</span>
-            </button>
-            <button 
-              onClick={() => toggleMenu('layout')}
-              className={`flex flex-col items-center gap-1 px-6 py-2 rounded-xl transition-all ${activeMenu === 'layout' ? 'bg-emerald-50 text-emerald-600' : 'text-slate-500 hover:bg-slate-50'}`}
-            >
-              <LayoutGrid size={20} />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Layout</span>
-            </button>
-            <div className="h-8 w-[1px] bg-slate-100 hidden md:block"></div>
-            <button 
-              onClick={handleReset}
-              className="flex flex-col items-center gap-1 px-6 py-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
-            >
-              <RefreshCcw size={20} />
-              <span className="text-[10px] font-bold uppercase tracking-wider">Reset</span>
-            </button>
-
-            {activeMenu && (
-              <div className="absolute top-full left-0 right-0 mt-2 px-4 md:px-0 flex justify-center animate-in slide-in-from-top-2 duration-200">
-                <div className="bg-white border border-slate-200 shadow-2xl rounded-3xl p-6 w-full max-w-md">
-                  <ControlSection 
-                    activeSection={activeMenu}
-                    settings={settings} 
-                    setSettings={setSettings} 
-                    onLogoUpload={handleLogoUpload}
-                    onClose={() => setActiveMenu(null)}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-        </nav>
-      )}
 
       <main className="flex-grow container mx-auto px-4 py-8 max-w-6xl">
         {images.length === 0 ? (
@@ -242,13 +186,13 @@ const App: React.FC = () => {
             <div className="w-24 h-24 bg-blue-50 rounded-3xl flex items-center justify-center mb-6 text-blue-600 shadow-inner">
               <Upload size={48} />
             </div>
-            <h2 className="text-3xl font-extrabold text-slate-800 mb-2 tracking-tight text-center">Bulk Mark Your Visuals</h2>
+            <h2 className="text-3xl font-extrabold text-slate-800 mb-2 tracking-tight text-center">Mark Your Visuals</h2>
             <p className="text-slate-500 mb-8 text-center max-w-sm font-medium">
-              Apply consistent branding across multiple photos. Entirely offline and secure.
+              Add professional watermarks to your photos. Works with single or multiple files. Entirely offline and secure.
             </p>
             <label className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded-2xl transition-all shadow-xl hover:shadow-blue-200/50 flex items-center gap-3 active:scale-95">
-              <Layers size={24} />
-              Select Batch to Process
+              <Upload size={24} />
+              Upload Photos
               <input 
                 type="file" 
                 className="hidden" 
@@ -298,7 +242,7 @@ const App: React.FC = () => {
               </div>
             </div>
             
-            <div className="flex flex-col md:flex-row items-center gap-4 w-full max-w-2xl">
+            <div className="hidden md:flex flex-col md:flex-row items-center gap-4 w-full max-w-2xl">
               <button 
                 onClick={handleDownloadCurrent}
                 disabled={isExporting}
@@ -323,9 +267,136 @@ const App: React.FC = () => {
         )}
       </main>
       
-      <footer className="py-8 text-center text-slate-300">
+      <footer className="hidden md:block py-8 text-center text-slate-300">
         <p className="text-[10px] font-bold tracking-[0.4em] uppercase">Private • Secure • Professional Batch Processing</p>
       </footer>
+
+      {/* Mobile Bottom Control Menu */}
+      {images.length > 0 && (
+        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 z-40 shadow-2xl shadow-slate-900/10 md:hidden">
+          <div className="flex items-center justify-center gap-2 py-3 px-4 relative" ref={menuRef}>
+            <button 
+              onClick={() => toggleMenu('text')}
+              className={`flex flex-col items-center gap-1 px-5 py-2 rounded-xl transition-all flex-1 ${activeMenu === 'text' ? 'bg-blue-50 text-blue-600' : 'text-slate-500 hover:bg-slate-50'}`}
+            >
+              <Type size={18} />
+              <span className="text-[9px] font-bold uppercase tracking-wider">Text</span>
+            </button>
+            <button 
+              onClick={() => toggleMenu('logo')}
+              className={`flex flex-col items-center gap-1 px-5 py-2 rounded-xl transition-all flex-1 ${activeMenu === 'logo' ? 'bg-purple-50 text-purple-600' : 'text-slate-500 hover:bg-slate-50'}`}
+            >
+              <ImageIcon size={18} />
+              <span className="text-[9px] font-bold uppercase tracking-wider">Logo</span>
+            </button>
+            <button 
+              onClick={() => toggleMenu('layout')}
+              className={`flex flex-col items-center gap-1 px-5 py-2 rounded-xl transition-all flex-1 ${activeMenu === 'layout' ? 'bg-emerald-50 text-emerald-600' : 'text-slate-500 hover:bg-slate-50'}`}
+            >
+              <LayoutGrid size={18} />
+              <span className="text-[9px] font-bold uppercase tracking-wider">Layout</span>
+            </button>
+            <button 
+              onClick={handleReset}
+              className="flex flex-col items-center gap-1 px-5 py-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all flex-1"
+            >
+              <RefreshCcw size={18} />
+              <span className="text-[9px] font-bold uppercase tracking-wider">Reset</span>
+            </button>
+
+            {activeMenu && (
+              <div className="absolute bottom-full left-0 right-0 mb-2 px-4 flex justify-center animate-in slide-in-from-bottom-2 duration-200">
+                <div className="bg-white border border-slate-200 shadow-2xl rounded-3xl p-4 w-full max-w-sm">
+                  <ControlSection 
+                    activeSection={activeMenu}
+                    settings={settings} 
+                    setSettings={setSettings} 
+                    onLogoUpload={handleLogoUpload}
+                    onClose={() => setActiveMenu(null)}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile Download Buttons - Inside Bottom Nav */}
+          {activeMenu === null && (
+            <div className="flex gap-2 px-4 pb-3">
+              <button 
+                onClick={handleDownloadCurrent}
+                disabled={isExporting}
+                className="flex-1 bg-white border border-slate-900 text-slate-900 font-bold py-2 px-3 text-sm rounded-2xl flex items-center justify-center gap-2 transition-all hover:bg-slate-50 active:scale-95 disabled:opacity-50"
+              >
+                <Download size={16} />
+                <span className="hidden xs:inline">Single</span>
+              </button>
+              <button 
+                onClick={handleDownloadAll}
+                disabled={isExporting}
+                className="flex-1 bg-slate-900 hover:bg-black text-white font-bold py-2 px-3 text-sm rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50"
+              >
+                <Layers size={16} />
+                <span className="hidden xs:inline">{isExporting ? `${exportProgress}%` : 'All'}</span>
+              </button>
+            </div>
+          )}
+        </nav>
+      )}
+
+      {/* Desktop Top Control Menu */}
+      {images.length > 0 && (
+        <nav className="hidden md:block bg-white border-b border-slate-100 sticky top-[73px] z-40 shadow-sm px-4">
+          <div className="container mx-auto flex items-center justify-center gap-2 md:gap-8 py-2 relative" ref={menuRef}>
+            <button 
+              onClick={() => toggleMenu('text')}
+              className={`flex flex-col items-center gap-1 px-6 py-2 rounded-xl transition-all ${activeMenu === 'text' ? 'bg-blue-50 text-blue-600' : 'text-slate-500 hover:bg-slate-50'}`}
+            >
+              <Type size={20} />
+              <span className="text-[10px] font-bold uppercase tracking-wider">Text</span>
+            </button>
+            <button 
+              onClick={() => toggleMenu('logo')}
+              className={`flex flex-col items-center gap-1 px-6 py-2 rounded-xl transition-all ${activeMenu === 'logo' ? 'bg-purple-50 text-purple-600' : 'text-slate-500 hover:bg-slate-50'}`}
+            >
+              <ImageIcon size={20} />
+              <span className="text-[10px] font-bold uppercase tracking-wider">Logo</span>
+            </button>
+            <button 
+              onClick={() => toggleMenu('layout')}
+              className={`flex flex-col items-center gap-1 px-6 py-2 rounded-xl transition-all ${activeMenu === 'layout' ? 'bg-emerald-50 text-emerald-600' : 'text-slate-500 hover:bg-slate-50'}`}
+            >
+              <LayoutGrid size={20} />
+              <span className="text-[10px] font-bold uppercase tracking-wider">Layout</span>
+            </button>
+            <div className="h-8 w-[1px] bg-slate-100 hidden md:block"></div>
+            <button 
+              onClick={handleReset}
+              className="flex flex-col items-center gap-1 px-6 py-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
+            >
+              <RefreshCcw size={20} />
+              <span className="text-[10px] font-bold uppercase tracking-wider">Reset</span>
+            </button>
+
+            {activeMenu && (
+              <div className="absolute top-full left-0 right-0 mt-2 px-4 md:px-0 flex justify-center animate-in slide-in-from-top-2 duration-200">
+                <div className="bg-white border border-slate-200 shadow-2xl rounded-3xl p-6 w-full max-w-md">
+                  <ControlSection 
+                    activeSection={activeMenu}
+                    settings={settings} 
+                    setSettings={setSettings} 
+                    onLogoUpload={handleLogoUpload}
+                    onClose={() => setActiveMenu(null)}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </nav>
+      )}
+
+      <div className="flex flex-col md:flex-row items-center gap-4 w-full max-w-2xl md:hidden px-4">
+        {/* These buttons are in the bottom nav now for mobile */}
+      </div>
     </div>
   );
 };
